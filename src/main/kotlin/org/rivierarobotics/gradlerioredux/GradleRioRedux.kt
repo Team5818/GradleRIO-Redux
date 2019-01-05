@@ -32,25 +32,33 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.attributes
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.the
+import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getPlugin
+import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.the
 
 internal val Project.rioExt
     get() = the<GradleRioReduxExtension>()
 
 class GradleRioRedux : Plugin<Project> {
+    lateinit var mainGeneration: TaskProvider<RobotMainGeneration>
+    lateinit var mainJavaCompile: TaskProvider<JavaCompile>
+
     override fun apply(project: Project) {
         project.run {
             extensions.create<GradleRioReduxExtension>("gradleRioRedux", project)
             applyPlugins()
+            setupMainGenerationTask()
 
             afterEvaluate {
                 rioExt.validate()
@@ -98,6 +106,22 @@ class GradleRioRedux : Plugin<Project> {
         plugins.getPlugin(WPIPlugin::class).addMavenRepositories(project, wpi)
     }
 
+    private fun Project.setupMainGenerationTask() {
+        mainGeneration = tasks.register<RobotMainGeneration>("robotMainGeneration") {
+            this.robotClass.set(rioExt.robotClassProperty)
+        }
+        mainJavaCompile = tasks.register<JavaCompile>("compileJava${mainGeneration.name.capitalize()}") {
+            val compileJava = tasks.getByName("compileJava")
+            val mgen = mainGeneration.get()
+
+            dependsOn(compileJava, mgen)
+
+            setSource(mgen.outputFile)
+            setDestinationDir(project.layout.buildDirectory.dir("${mgen.name}/classes").map { it.asFile })
+            classpath = project.files(compileJava.outputs, configurations["compileClasspath"])
+        }
+    }
+
     private fun Project.setupDeploy() {
         configure<DeployExtension> {
             targets {
@@ -133,16 +157,17 @@ class GradleRioRedux : Plugin<Project> {
     private fun Project.setupFatJar() {
         tasks.named<Jar>("jar") {
             from(delegateClosureOf<Any> {
-                configurations.getByName("compile").map {
+                configurations["runtimeClasspath"].map {
                     return@map when {
                         it.isDirectory -> it
                         else -> zipTree(it)
                     }
                 }
             })
+            from(mainJavaCompile)
 
             manifest {
-                attributes("Main-Class" to rioExt.mainClass)
+                attributes("Main-Class" to mainGeneration.get().mainClassFqn)
             }
         }
     }

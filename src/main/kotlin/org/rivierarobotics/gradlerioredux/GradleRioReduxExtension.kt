@@ -32,8 +32,8 @@ import org.gradle.kotlin.dsl.setValue
 import java.nio.file.Files
 
 open class GradleRioReduxExtension(project: Project) {
-    val mainClassProperty: Property<String> = project.objects.property()
-    var mainClass: String by mainClassProperty
+    val robotClassProperty: Property<String> = project.objects.property()
+    var robotClass: String by robotClassProperty
 
     val teamNumberProperty: Property<Int> = project.objects.property()
     var teamNumber: Int by teamNumberProperty
@@ -66,8 +66,8 @@ open class GradleRioReduxExtension(project: Project) {
         }.toSet()
 
     fun validate() {
-        if (!mainClassProperty.isPresent) {
-            throw IllegalStateException("Missing value for mainClass!")
+        if (!robotClassProperty.isPresent) {
+            throw IllegalStateException("Missing value for robotClass!")
         }
         if (!teamNumberProperty.isPresent) {
             throw IllegalStateException("Missing value for teamNumber!")

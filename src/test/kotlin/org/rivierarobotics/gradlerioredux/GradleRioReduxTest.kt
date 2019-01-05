@@ -42,7 +42,7 @@ class GradleRioReduxTest {
                     id("org.rivierarobotics.gradlerioredux")
                 }
                 gradleRioRedux {
-                    mainClass = "org.rr.Robot"
+                    robotClass = "org.rr.Robot"
                     teamNumber = 5818
                     addCtre = true
                 }
@@ -69,7 +69,9 @@ class GradleRioReduxTest {
         makeBuildFile()
         testProjectDir.newFolder("src", "main", "java", "org", "rr").resolve("Robot.java")
                 .writeText("""
-                    public class Robot {}
+                    package org.rr;
+                    import edu.wpi.first.wpilibj.TimedRobot;
+                    public class Robot extends TimedRobot {}
                 """.trimIndent())
 
         val result = GradleRunner.create()
