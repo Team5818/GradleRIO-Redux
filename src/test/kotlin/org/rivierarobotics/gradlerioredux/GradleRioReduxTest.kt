@@ -39,7 +39,6 @@ class GradleRioReduxTest {
         buildFile = testProjectDir.newFile("build.gradle.kts")
         buildFile.writeText("""
                 plugins {
-                    java
                     id("org.rivierarobotics.gradlerioredux")
                 }
                 gradleRioRedux {
