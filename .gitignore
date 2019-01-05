@@ -1,0 +1,8 @@
+.gradle/
+.classpath
+.project
+.factorypath
+.settings/
+bin/
+build/
+/.apt_generated/
