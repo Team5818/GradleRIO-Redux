@@ -44,6 +44,7 @@ class GradleRioReduxTest {
                 gradleRioRedux {
                     mainClass = "org.rr.Robot"
                     teamNumber = 5818
+                    addCtre = true
                 }
             """.trimIndent())
     }

@@ -27,6 +27,7 @@ repositories {
 dependencies {
     api(gradleApi())
     implementation(kotlin("stdlib-jdk8"))
+    implementation("com.squareup.okhttp3:okhttp:3.12.1")
     implementation("edu.wpi.first:GradleRIO:2019.1.1")
     implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.3.10")
     testImplementation(kotlin("test-junit"))

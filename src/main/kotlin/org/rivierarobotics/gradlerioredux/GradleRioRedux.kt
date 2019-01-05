@@ -25,6 +25,7 @@ import com.techshroom.inciseblue.InciseBluePlugin
 import edu.wpi.first.gradlerio.GradleRIOPlugin
 import edu.wpi.first.gradlerio.frc.FRCJavaArtifact
 import edu.wpi.first.gradlerio.frc.RoboRIO
+import edu.wpi.first.gradlerio.wpi.WPIPlugin
 import edu.wpi.first.toolchain.NativePlatforms
 import jaci.gradle.deploy.DeployExtension
 import org.gradle.api.JavaVersion
@@ -40,6 +41,7 @@ import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.the
+import org.gradle.kotlin.dsl.getPlugin
 
 internal val Project.rioExt
     get() = the<GradleRioReduxExtension>()
@@ -52,6 +54,7 @@ class GradleRioRedux : Plugin<Project> {
 
             afterEvaluate {
                 rioExt.validate()
+                unpackVendorDependencies()
                 mainSetup()
             }
         }
@@ -73,10 +76,26 @@ class GradleRioRedux : Plugin<Project> {
         apply<GradleRIOPlugin>()
     }
 
+    private fun Project.unpackVendorDependencies() {
+        val rioExt = rioExt
+        val jsonDepDir = rioExt.jsonDependencyDirectory.asFile
+        val pullJsonDependency = PullJsonDependency(
+                rioExt.jsonCacheDirectory.asFile.toPath(),
+                jsonDepDir.toPath(),
+                gradle.startParameter.isOffline
+        )
+        rioExt.jsonDependencies.forEach {
+            pullJsonDependency.downloadDependencyIfNeeded(it)
+        }
+        wpi.deps.vendor.loadFrom(jsonDepDir)
+    }
+
     private fun Project.mainSetup() {
         setupDeploy()
         setupDependencies()
         setupFatJar()
+        // need to run this again:
+        plugins.getPlugin(WPIPlugin::class).addMavenRepositories(project, wpi)
     }
 
     private fun Project.setupDeploy() {
