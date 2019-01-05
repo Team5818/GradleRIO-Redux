@@ -35,11 +35,11 @@ import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.kotlin.dsl.KotlinClosure0
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.attributes
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getPlugin
@@ -156,18 +156,17 @@ class GradleRioRedux : Plugin<Project> {
 
     private fun Project.setupFatJar() {
         tasks.named<Jar>("jar") {
-            from(delegateClosureOf<Any> {
-                configurations["runtimeClasspath"].map {
+            from(KotlinClosure0(function = {
+                return@KotlinClosure0 configurations["runtimeClasspath"].map {
                     return@map when {
                         it.isDirectory -> it
                         else -> zipTree(it)
                     }
                 }
-            })
-            from(mainJavaCompile)
+            }), mainJavaCompile)
 
             manifest {
-                attributes("Main-Class" to mainGeneration.get().mainClassFqn)
+                attributes("Main-Class" to mainGeneration.get().mainClassFqn.get())
             }
         }
     }
