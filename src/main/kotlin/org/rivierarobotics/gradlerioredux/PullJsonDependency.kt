@@ -81,7 +81,7 @@ class PullJsonDependency(cacheDir: Path,
         val downloadOutFile = jsonOutDir.resolve(downloadTarget)
         if (!alreadyCopied(downloadCacheFile, downloadOutFile)) {
             logger.lifecycle("Copying JSON dependency $downloadTarget to project")
-            copy(downloadCacheFile, downloadOutFile)
+            copy(downloadTarget, downloadCacheFile, downloadOutFile)
         }
     }
 
@@ -125,7 +125,10 @@ class PullJsonDependency(cacheDir: Path,
         return dstLastMod >= srcLastMod
     }
 
-    private fun copy(source: Path, target: Path) {
+    private fun copy(downloadTarget: String, source: Path, target: Path) {
+        if (!Files.exists(source) && !Files.exists(target)) {
+            throw IllegalStateException("Vendor dependency unavailable: $downloadTarget. Try with online mode.")
+        }
         Files.copy(source, target,
                 StandardCopyOption.REPLACE_EXISTING,
                 StandardCopyOption.COPY_ATTRIBUTES)

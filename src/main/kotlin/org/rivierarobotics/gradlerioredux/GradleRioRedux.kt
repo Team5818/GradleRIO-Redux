@@ -82,7 +82,7 @@ class GradleRioRedux : Plugin<Project> {
         val pullJsonDependency = PullJsonDependency(
                 rioExt.jsonCacheDirectory.asFile.toPath(),
                 jsonDepDir.toPath(),
-                gradle.startParameter.isOffline
+                !gradle.startParameter.isOffline
         )
         rioExt.jsonDependencies.forEach {
             pullJsonDependency.downloadDependencyIfNeeded(it)
