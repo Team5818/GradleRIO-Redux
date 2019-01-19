@@ -5,7 +5,7 @@ plugins {
     kotlin("jvm") version embeddedKotlinVersion
     `java-gradle-plugin`
     id("net.researchgate.release") version "2.8.0"
-    id("com.techshroom.incise-blue") version "0.3.10"
+    id("com.techshroom.incise-blue") version "0.3.11"
     id("com.gradle.plugin-publish") version "0.10.0"
 }
 
@@ -28,8 +28,8 @@ dependencies {
     api(gradleApi())
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.squareup.okhttp3:okhttp:3.12.1")
-    implementation("edu.wpi.first:GradleRIO:2019.1.1")
-    implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.3.10")
+    implementation("edu.wpi.first:GradleRIO:2019.2.1")
+    implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.3.11")
     testImplementation(kotlin("test-junit"))
     testImplementation("junit:junit:4.12")
 }

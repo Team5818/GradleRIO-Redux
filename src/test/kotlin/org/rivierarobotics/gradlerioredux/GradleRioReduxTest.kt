@@ -57,6 +57,7 @@ class GradleRioReduxTest {
                 .withProjectDir(testProjectDir.root)
                 .withArguments("tasks", "-Si")
                 .withPluginClasspath()
+                .forwardOutput()
                 .build()
 
         val tasksTask = result.task(":tasks")
@@ -78,6 +79,7 @@ class GradleRioReduxTest {
                 .withProjectDir(testProjectDir.root)
                 .withArguments("build", "-Si")
                 .withPluginClasspath()
+                .forwardOutput()
                 .build()
 
         val tasksTask = result.task(":build")
