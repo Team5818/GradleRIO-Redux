@@ -1,5 +1,6 @@
 import com.techshroom.inciseblue.commonLib
 import net.minecrell.gradle.licenser.LicenseExtension
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     `kotlin-dsl`
@@ -20,6 +21,17 @@ inciseBlue {
 }
 configure<LicenseExtension> {
     include("**/*.kt")
+}
+
+// Extra test logging for CI
+when (System.getenv("CI")) {
+    "true", "1" ->
+        tasks.withType<Test>().configureEach {
+            this.testLogging {
+                events("passed", "skipped", "failed")
+                exceptionFormat = TestExceptionFormat.FULL
+            }
+        }
 }
 
 repositories {
