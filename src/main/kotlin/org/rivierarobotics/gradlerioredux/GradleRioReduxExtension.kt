@@ -43,7 +43,7 @@ open class GradleRioReduxExtension(project: Project) {
     val extraJsonDependenciesProperty: SetProperty<String> = project.objects.setProperty<String>().also {
         it.set(listOf())
     }
-    var extraJsonDependencies: Set<String>
+    var extraJsonDependencies: MutableSet<String>
         get() = extraJsonDependenciesProperty.get()
         set(value) = extraJsonDependenciesProperty.set(value)
 

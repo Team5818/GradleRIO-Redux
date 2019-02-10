@@ -22,22 +22,39 @@ package org.rivierarobotics.gradlerioredux
 
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
-import java.io.File
-import kotlin.test.Test
+import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class GradleRioReduxTest {
-    @JvmField
-    @Rule
-    val testProjectDir: TemporaryFolder = TemporaryFolder()
-    lateinit var buildFile: File
 
-    private fun makeBuildFile() {
-        buildFile = testProjectDir.newFile("build.gradle.kts")
-        buildFile.writeText("""
+    sealed class GradleVersion {
+        object Current : GradleVersion() {
+            override fun toString() = "Gradle Version: Current"
+        }
+
+        class String(val version: kotlin.String) : GradleVersion() {
+            override fun toString() = "Gradle Version: $version"
+        }
+    }
+
+    companion object {
+        @get:JvmStatic
+        val gradleVersions: Set<GradleVersion> = when (System.getenv("CI")) {
+            "true", "1" -> setOf("5.0", "5.1.1").map(GradleVersion::String).toSet()
+            else -> setOf(GradleVersion.Current)
+        }
+    }
+
+    lateinit var buildFile: Path
+
+    private fun makeBuildFile(testProjectDir: Path) {
+        buildFile = testProjectDir.resolve("build.gradle.kts")
+        Files.writeString(buildFile, """
                 plugins {
                     id("org.rivierarobotics.gradlerioredux")
                 }
@@ -49,12 +66,21 @@ class GradleRioReduxTest {
             """.trimIndent())
     }
 
-    @Test
-    fun gradleCanConfigureProject() {
-        makeBuildFile()
+    @ParameterizedTest
+    @MethodSource(value = ["getGradleVersions"])
+    fun gradleCanConfigureProject(
+            gradleVersion: GradleVersion,
+            @TempDir testProjectDir: Path
+    ) {
+        makeBuildFile(testProjectDir)
 
         val result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
+                .also {
+                    if (gradleVersion is GradleVersion.String) {
+                        it.withGradleVersion(gradleVersion.version)
+                    }
+                }
+                .withProjectDir(testProjectDir.toFile())
                 .withArguments("tasks", "-Si")
                 .withPluginClasspath()
                 .forwardOutput()
@@ -65,18 +91,28 @@ class GradleRioReduxTest {
         assertEquals(tasksTask.outcome, TaskOutcome.SUCCESS)
     }
 
-    @Test
-    fun gradleCanBuildProject() {
-        makeBuildFile()
-        testProjectDir.newFolder("src", "main", "java", "org", "rr").resolve("Robot.java")
-                .writeText("""
+    @ParameterizedTest
+    @MethodSource(value = ["getGradleVersions"])
+    fun gradleCanBuildProject(
+            gradleVersion: GradleVersion,
+            @TempDir testProjectDir: Path
+    ) {
+        makeBuildFile(testProjectDir)
+        val srcFile = testProjectDir.resolve("src/main/java/org/rr/Robot.java")
+        Files.createDirectories(srcFile.parent)
+        Files.writeString(srcFile, """
                     package org.rr;
                     import edu.wpi.first.wpilibj.TimedRobot;
                     public class Robot extends TimedRobot {}
                 """.trimIndent())
 
         val result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
+                .also {
+                    if (gradleVersion is GradleVersion.String) {
+                        it.withGradleVersion(gradleVersion.version)
+                    }
+                }
+                .withProjectDir(testProjectDir.toFile())
                 .withArguments("build", "-Si")
                 .withPluginClasspath()
                 .forwardOutput()
