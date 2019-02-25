@@ -60,12 +60,7 @@ class PullJsonDependency(cacheDir: Path,
      */
     fun downloadDependencyIfNeeded(url: String) {
         val httpUrl = HttpUrl.get(url)
-        val downloadTarget = httpUrl.pathSegments().last().let {
-            when {
-                it.endsWith(".json") -> it
-                else -> "$it.json"
-            }
-        }
+        val downloadTarget = url.urlToPath()
         val downloadCacheFile = jsonDownloadCache.resolve(downloadTarget)
         // HEAD first, and check modification times
         if (useNetwork) {
@@ -108,8 +103,10 @@ class PullJsonDependency(cacheDir: Path,
                 .get().url(httpUrl)
                 .build()).simpleErrorHandlingExecute()
         val body = response.body() ?: httpUrl.toString().downloadFailed("No response body")
-        Okio.buffer(Okio.sink(downloadCacheFile)).use { snk ->
-            body.source().use(snk::writeAll)
+        response.use {
+            Okio.buffer(Okio.sink(downloadCacheFile)).use { snk ->
+                body.source().use(snk::writeAll)
+            }
         }
         response.headers().getDate("Last-Modified")?.let {
             Files.setLastModifiedTime(downloadCacheFile, FileTime.fromMillis(it.time))
@@ -138,7 +135,9 @@ class PullJsonDependency(cacheDir: Path,
         val response = execute()
         if (!response.isSuccessful) {
             val message = response.body()?.string() ?: "<No message>"
-            response.request().url().toString().downloadFailed("${response.code()} $message")
+            response.use {
+                it.request().url().toString().downloadFailed("${response.code()} $message")
+            }
         }
         return response
     }
