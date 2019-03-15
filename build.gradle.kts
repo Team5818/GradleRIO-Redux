@@ -42,7 +42,7 @@ dependencies {
     api(gradleApi())
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.squareup.okhttp3:okhttp:3.13.1")
-    implementation("edu.wpi.first:GradleRIO:2019.3.2")
+    implementation("edu.wpi.first:GradleRIO:2019.4.1")
     implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.3.13")
     testImplementation(kotlin("test-junit5"))
     commonLib("org.junit.jupiter", "junit-jupiter", "5.4.0") {

@@ -84,7 +84,7 @@ class PullJsonDependency(cacheDir: Path,
         val response = httpClient.newCall(Request.Builder()
                 .head().url(httpUrl)
                 .build()).simpleErrorHandlingExecute()
-        val remoteLastModified = response.headers().getDate("Last-Modified")?.time
+        val remoteLastModified = response.use { it.headers().getDate("Last-Modified")?.time }
         val localLastModified = downloadCacheFile.lastModifiedTimeIfExists()
         if (remoteLastModified == null || localLastModified == null) {
             return false
