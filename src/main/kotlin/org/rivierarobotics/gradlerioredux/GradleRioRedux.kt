@@ -78,6 +78,7 @@ class GradleRioRedux : Plugin<Project> {
             }
             util {
                 setJavaVersion(JavaVersion.VERSION_11)
+                addRepositories = false
             }
             ide()
         }
