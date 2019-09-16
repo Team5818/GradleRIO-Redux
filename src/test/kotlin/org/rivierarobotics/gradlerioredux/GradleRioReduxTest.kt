@@ -45,7 +45,7 @@ class GradleRioReduxTest {
     companion object {
         @get:JvmStatic
         val gradleVersions: Set<GradleVersion> = when (System.getenv("CI")) {
-            "true", "1" -> setOf("5.6.2").map(GradleVersion::String).toSet()
+            "true", "1" -> setOf("5.5.1").map(GradleVersion::String).toSet()
             else -> setOf(GradleVersion.Current)
         }
     }
