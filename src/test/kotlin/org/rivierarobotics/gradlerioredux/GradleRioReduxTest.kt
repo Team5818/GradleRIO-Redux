@@ -45,7 +45,7 @@ class GradleRioReduxTest {
     companion object {
         @get:JvmStatic
         val gradleVersions: Set<GradleVersion> = when (System.getenv("CI")) {
-            "true", "1" -> setOf("5.0", "5.1.1").map(GradleVersion::String).toSet()
+            "true", "1" -> setOf("5.6.2").map(GradleVersion::String).toSet()
             else -> setOf(GradleVersion.Current)
         }
     }
@@ -54,37 +54,37 @@ class GradleRioReduxTest {
 
     private fun makeBuildFile(testProjectDir: Path) {
         buildFile = testProjectDir.resolve("build.gradle.kts")
+        Path::class.java.kotlin
         Files.writeString(buildFile, """
-                plugins {
-                    id("org.rivierarobotics.gradlerioredux")
-                }
-                gradleRioRedux {
-                    robotClass = "org.rr.Robot"
-                    teamNumber = 5818
-                    addCtre = true
-                }
-            """.trimIndent())
+                    plugins {
+                        id("org.rivierarobotics.gradlerioredux")
+                    }
+                    gradleRioRedux {
+                        robotClass = "org.rr.Robot"
+                        teamNumber = 5818
+                    }
+                """.trimIndent())
     }
 
     @ParameterizedTest
     @MethodSource(value = ["getGradleVersions"])
     fun gradleCanConfigureProject(
-            gradleVersion: GradleVersion,
-            @TempDir testProjectDir: Path
+        gradleVersion: GradleVersion,
+        @TempDir testProjectDir: Path
     ) {
         makeBuildFile(testProjectDir)
 
         val result = GradleRunner.create()
-                .also {
-                    if (gradleVersion is GradleVersion.String) {
-                        it.withGradleVersion(gradleVersion.version)
-                    }
+            .also {
+                if (gradleVersion is GradleVersion.String) {
+                    it.withGradleVersion(gradleVersion.version)
                 }
-                .withProjectDir(testProjectDir.toFile())
-                .withArguments("tasks", "-Si")
-                .withPluginClasspath()
-                .forwardOutput()
-                .build()
+            }
+            .withProjectDir(testProjectDir.toFile())
+            .withArguments("tasks", "-Si", "--debug")
+            .withPluginClasspath()
+            .forwardOutput()
+            .build()
 
         val tasksTask = result.task(":tasks")
         assertNotNull(tasksTask)
@@ -94,29 +94,29 @@ class GradleRioReduxTest {
     @ParameterizedTest
     @MethodSource(value = ["getGradleVersions"])
     fun gradleCanBuildProject(
-            gradleVersion: GradleVersion,
-            @TempDir testProjectDir: Path
+        gradleVersion: GradleVersion,
+        @TempDir testProjectDir: Path
     ) {
         makeBuildFile(testProjectDir)
         val srcFile = testProjectDir.resolve("src/main/java/org/rr/Robot.java")
         Files.createDirectories(srcFile.parent)
         Files.writeString(srcFile, """
-                    package org.rr;
-                    import edu.wpi.first.wpilibj.TimedRobot;
-                    public class Robot extends TimedRobot {}
-                """.trimIndent())
+                        package org.rr;
+                        import edu.wpi.first.wpilibj.TimedRobot;
+                        public class Robot extends TimedRobot {}
+                    """.trimIndent())
 
         val result = GradleRunner.create()
-                .also {
-                    if (gradleVersion is GradleVersion.String) {
-                        it.withGradleVersion(gradleVersion.version)
-                    }
+            .also {
+                if (gradleVersion is GradleVersion.String) {
+                    it.withGradleVersion(gradleVersion.version)
                 }
-                .withProjectDir(testProjectDir.toFile())
-                .withArguments("build", "-Si")
-                .withPluginClasspath()
-                .forwardOutput()
-                .build()
+            }
+            .withProjectDir(testProjectDir.toFile())
+            .withArguments("build", "-Si")
+            .withPluginClasspath()
+            .forwardOutput()
+            .build()
 
         val tasksTask = result.task(":build")
         assertNotNull(tasksTask)

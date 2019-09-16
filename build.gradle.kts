@@ -6,8 +6,8 @@ plugins {
     `kotlin-dsl`
     kotlin("jvm") version embeddedKotlinVersion
     `java-gradle-plugin`
-    id("net.researchgate.release") version "2.8.0"
-    id("com.techshroom.incise-blue") version "0.3.13"
+    id("net.researchgate.release") version "2.8.1"
+    id("com.techshroom.incise-blue") version "0.4.0"
     id("com.gradle.plugin-publish") version "0.10.1"
 }
 
@@ -41,11 +41,10 @@ repositories {
 dependencies {
     api(gradleApi())
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.squareup.okhttp3:okhttp:3.13.1")
     implementation("edu.wpi.first:GradleRIO:2019.4.1")
-    implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.3.13")
+    implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.4.0")
     testImplementation(kotlin("test-junit5"))
-    commonLib("org.junit.jupiter", "junit-jupiter", "5.4.0") {
+    commonLib("org.junit.jupiter", "junit-jupiter", "5.5.2") {
         testImplementation(lib("api"))
         testImplementation(lib("engine"))
         testImplementation(lib("params"))

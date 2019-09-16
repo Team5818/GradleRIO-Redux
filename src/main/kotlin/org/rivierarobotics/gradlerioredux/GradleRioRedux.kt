@@ -46,7 +46,6 @@ import org.gradle.kotlin.dsl.getPlugin
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.the
-import java.io.File
 
 internal val Project.rioExt
     get() = the<GradleRioReduxExtension>()
@@ -63,7 +62,6 @@ class GradleRioRedux : Plugin<Project> {
 
             afterEvaluate {
                 rioExt.validate()
-                unpackVendorDependencies()
                 mainSetup()
             }
         }
@@ -84,24 +82,6 @@ class GradleRioRedux : Plugin<Project> {
         }
 
         apply<GradleRIOPlugin>()
-    }
-
-    private fun Project.unpackVendorDependencies() {
-        val rioExt = rioExt
-        val jsonDepDir = rioExt.jsonDependencyDirectory.asFile
-        val pullJsonDependency = PullJsonDependency(
-                rioExt.jsonCacheDirectory.asFile.toPath(),
-                jsonDepDir.toPath(),
-                !gradle.startParameter.isOffline
-        )
-        val existingFiles = jsonDepDir.listFiles().associateBy { it.name }.toMutableMap()
-        rioExt.jsonDependencies.forEach {
-            pullJsonDependency.downloadDependencyIfNeeded(it)
-            existingFiles.remove(it.urlToPath())
-        }
-        // cleanup files we didn't download this round
-        existingFiles.values.forEach(File::delete)
-        wpi.deps.vendor.loadFrom(jsonDepDir)
     }
 
     private fun Project.mainSetup() {
