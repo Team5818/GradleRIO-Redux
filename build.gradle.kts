@@ -11,6 +11,10 @@ plugins {
     id("com.gradle.plugin-publish") version "0.10.1"
 }
 
+require(JavaVersion.current().isJava11Compatible) {
+    "Java 11+ is needed to build this project."
+}
+
 inciseBlue {
     license()
     util {
@@ -41,8 +45,8 @@ repositories {
 dependencies {
     api(gradleApi())
     implementation(kotlin("stdlib-jdk8"))
-    implementation("edu.wpi.first:GradleRIO:2019.4.1")
-    implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.4.0")
+    implementation("edu.wpi.first:GradleRIO:2020.1.2")
+    implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.5.6")
     testImplementation(kotlin("test-junit5"))
     commonLib("org.junit.jupiter", "junit-jupiter", "5.5.2") {
         testImplementation(lib("api"))

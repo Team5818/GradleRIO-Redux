@@ -30,24 +30,25 @@ import jaci.gradle.deploy.artifact.Artifact
 import jaci.gradle.deploy.artifact.ArtifactsExtension
 import jaci.gradle.deploy.target.RemoteTarget
 import jaci.gradle.deploy.target.TargetsExtension
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.the
 
-fun DeployExtension.targets(action: TargetsExtension.() -> Unit) {
+fun DeployExtension.targetsKt(action: TargetsExtension.() -> Unit) {
     targets.action()
 }
 
-inline fun <reified T : RemoteTarget> TargetsExtension.target(name: String, noinline config: T.() -> Unit) {
-    target(name, T::class.java, delegateClosureOf(config))
+inline fun <reified T : RemoteTarget> TargetsExtension.targetKt(name: String, config: Action<T>) {
+    target(name, T::class.java, config)
 }
 
-fun DeployExtension.artifacts(action: ArtifactsExtension.() -> Unit) {
+fun DeployExtension.artifactsKt(action: ArtifactsExtension.() -> Unit) {
     artifacts.action()
 }
 
-inline fun <reified T : Artifact> ArtifactsExtension.artifact(name: String, noinline config: T.() -> Unit) {
-    artifact(name, T::class.java, delegateClosureOf(config))
+inline fun <reified T : Artifact> ArtifactsExtension.artifactKt(name: String, config: Action<T>) {
+    artifact(name, T::class.java, config)
 }
 
 val Project.frc

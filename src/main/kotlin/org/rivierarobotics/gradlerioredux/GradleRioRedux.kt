@@ -110,14 +110,14 @@ class GradleRioRedux : Plugin<Project> {
 
     private fun Project.setupDeploy() {
         configure<DeployExtension> {
-            targets {
-                target<RoboRIO>("roboRio") {
+            targetsKt {
+                targetKt<RoboRIO>("roboRio") {
                     team = rioExt.teamNumber
                 }
             }
 
-            artifacts {
-                artifact<FRCJavaArtifact>("frcJava") {
+            artifactsKt {
+                artifactKt<FRCJavaArtifact>("frcJava") {
                     targets.add("roboRio")
                     debug = frc.getDebugOrDefault(false)
                 }
