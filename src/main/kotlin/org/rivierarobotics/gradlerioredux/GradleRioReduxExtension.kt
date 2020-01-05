@@ -22,8 +22,11 @@ package org.rivierarobotics.gradlerioredux
 
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
 import org.gradle.kotlin.dsl.getValue
 import org.gradle.kotlin.dsl.property
+import org.gradle.kotlin.dsl.provideDelegate
+import org.gradle.kotlin.dsl.setProperty
 import org.gradle.kotlin.dsl.setValue
 
 open class GradleRioReduxExtension(project: Project) {
@@ -32,6 +35,17 @@ open class GradleRioReduxExtension(project: Project) {
 
     val teamNumberProperty: Property<Int> = project.objects.property()
     var teamNumber: Int by teamNumberProperty
+
+    val librariesProperty: SetProperty<Library> = project.objects.setProperty()
+    init {
+        librariesProperty.convention(emptySet())
+    }
+
+    val libraries: Set<Library>
+        get() = librariesProperty.get()
+
+    fun addLibrary(library: Library) = librariesProperty.add(library)
+    fun addLibraries(vararg libraries: Library) = librariesProperty.addAll(*libraries)
 
     fun validate() {
         check(robotClassProperty.isPresent) { "Missing value for robotClass!" }

@@ -46,9 +46,13 @@ import org.gradle.kotlin.dsl.getPlugin
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.the
+import org.rivierarobotics.gradlerioredux.tasks.CheckVendorDeps
+import org.rivierarobotics.gradlerioredux.tasks.UpdateVendorDeps
 
 internal val Project.rioExt
     get() = the<GradleRioReduxExtension>()
+
+private const val TASK_GROUP = "GradleRIO-Redux"
 
 class GradleRioRedux : Plugin<Project> {
     lateinit var mainGeneration: TaskProvider<RobotMainGeneration>
@@ -58,7 +62,7 @@ class GradleRioRedux : Plugin<Project> {
         project.run {
             extensions.create<GradleRioReduxExtension>("gradleRioRedux", project)
             applyPlugins()
-            setupMainGenerationTask()
+            setupTasks()
 
             afterEvaluate {
                 rioExt.validate()
@@ -92,11 +96,17 @@ class GradleRioRedux : Plugin<Project> {
         plugins.getPlugin(WPIPlugin::class).addMavenRepositories(project, wpi)
     }
 
-    private fun Project.setupMainGenerationTask() {
+    private fun Project.setupTasks() {
         mainGeneration = tasks.register<RobotMainGeneration>("robotMainGeneration") {
+            description = "Generates the Main file for the robot."
+            group = TASK_GROUP
+
             this.robotClass.set(rioExt.robotClassProperty)
         }
-        mainJavaCompile = tasks.register<JavaCompile>("compileJava${mainGeneration.name.capitalize()}") {
+        mainJavaCompile = tasks.register<JavaCompile>("compile${mainGeneration.name.capitalize()}Java") {
+            description = "Compiles the Main file for the robot."
+            group = TASK_GROUP
+
             val compileJava = tasks.getByName("compileJava")
             val mgen = mainGeneration.get()
 
@@ -105,6 +115,14 @@ class GradleRioRedux : Plugin<Project> {
             setSource(mgen.outputFile)
             setDestinationDir(project.layout.buildDirectory.dir("${mgen.name}/classes").map { it.asFile })
             classpath = project.files(compileJava.outputs, configurations["compileClasspath"])
+        }
+        tasks.register<CheckVendorDeps>("checkVendorDeps") {
+            description = "Check the vendor dependency JSON files for updates."
+            group = TASK_GROUP
+        }
+        tasks.register<UpdateVendorDeps>("updateVendorDeps") {
+            description = "Update the vendor dependency JSON files."
+            group = TASK_GROUP
         }
     }
 

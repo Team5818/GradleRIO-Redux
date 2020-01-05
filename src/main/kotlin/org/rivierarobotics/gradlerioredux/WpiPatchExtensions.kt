@@ -25,6 +25,7 @@ package org.rivierarobotics.gradlerioredux
 
 import edu.wpi.first.gradlerio.frc.FRCExtension
 import edu.wpi.first.gradlerio.wpi.WPIExtension
+import edu.wpi.first.gradlerio.wpi.dependencies.WPIVendorDepsExtension
 import jaci.gradle.deploy.DeployExtension
 import jaci.gradle.deploy.artifact.Artifact
 import jaci.gradle.deploy.artifact.ArtifactsExtension
@@ -32,8 +33,9 @@ import jaci.gradle.deploy.target.RemoteTarget
 import jaci.gradle.deploy.target.TargetsExtension
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.the
+import java.net.URL
+import java.nio.file.Files
 
 fun DeployExtension.targetsKt(action: TargetsExtension.() -> Unit) {
     targets.action()
@@ -50,6 +52,18 @@ fun DeployExtension.artifactsKt(action: ArtifactsExtension.() -> Unit) {
 inline fun <reified T : Artifact> ArtifactsExtension.artifactKt(name: String, config: Action<T>) {
     artifact(name, T::class.java, config)
 }
+
+val WPIVendorDepsExtension.downloadInfo
+    get() = dependencies
+        .filterNot { it.jsonUrl.isNullOrEmpty() }
+        .map {
+            val file = vendorFolder.toPath().resolve(it.fileName)
+            require(Files.exists(file)) {
+                "Vendor dep ${it.name} expects to be a file named ${it.fileName}," +
+                    " but that file does not exist!"
+            }
+            DownloadInfo(file, URL(it.jsonUrl))
+        }
 
 val Project.frc
     get() = the<FRCExtension>()
