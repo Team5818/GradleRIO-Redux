@@ -25,6 +25,7 @@ package org.rivierarobotics.gradlerioredux
 
 import edu.wpi.first.gradlerio.frc.FRCExtension
 import edu.wpi.first.gradlerio.wpi.WPIExtension
+import edu.wpi.first.gradlerio.wpi.dependencies.WPIDepsExtension
 import edu.wpi.first.gradlerio.wpi.dependencies.WPIVendorDepsExtension
 import jaci.gradle.deploy.DeployExtension
 import jaci.gradle.deploy.artifact.Artifact
@@ -34,6 +35,7 @@ import jaci.gradle.deploy.target.TargetsExtension
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.the
+import org.gradle.nativeplatform.platform.NativePlatform
 import java.net.URL
 import java.nio.file.Files
 
@@ -51,6 +53,12 @@ fun DeployExtension.artifactsKt(action: ArtifactsExtension.() -> Unit) {
 
 inline fun <reified T : Artifact> ArtifactsExtension.artifactKt(name: String, config: Action<T>) {
     artifact(name, T::class.java, config)
+}
+
+fun WPIDepsExtension.allJavaDeps() = vendor.java() + wpilib()
+
+fun WPIDepsExtension.allJniDeps(platform: String): List<String> {
+    return vendor.jni(platform) + wpilibJni(platform)
 }
 
 val WPIVendorDepsExtension.downloadInfo

@@ -145,13 +145,13 @@ class GradleRioRedux : Plugin<Project> {
 
     private fun Project.setupDependencies() {
         dependencies {
-            (wpi.deps.vendor.java() + wpi.deps.wpilib()).forEach {
+            wpi.deps.allJavaDeps().forEach {
                 "implementation"(it)
             }
-            wpi.deps.vendor.jni(NativePlatforms.roborio).forEach {
+            wpi.deps.allJniDeps(NativePlatforms.roborio).forEach {
                 "nativeZip"(it)
             }
-            wpi.deps.vendor.jni(NativePlatforms.desktop).forEach {
+            wpi.deps.allJniDeps(NativePlatforms.desktop).forEach {
                 "nativeDesktopZip"(it)
             }
             "testImplementation"("junit:junit:4.12")
