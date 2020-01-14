@@ -20,7 +20,28 @@
 
 package org.rivierarobotics.gradlerioredux
 
+import com.google.common.hash.Funnels
+import com.google.common.hash.Hashing
+import java.io.InputStream
 import java.net.URL
+import java.nio.file.Files
 import java.nio.file.Path
 
-data class DownloadInfo(val file: Path, val url: URL)
+private fun hasher() = Hashing.murmur3_128().newHasher()
+
+private inline fun hashInputStream(inputStream: () -> InputStream) = hasher().run {
+    inputStream().use {
+        it.copyTo(Funnels.asOutputStream(this))
+    }
+    hash().toString()
+}
+
+private fun hashUrl(url: URL) = hashInputStream { url.openStream() }
+
+private fun hashFile(file: Path) = hashInputStream { Files.newInputStream(file) }
+
+data class DownloadInfo(val file: Path, val url: URL) {
+    val upToDate by lazy {
+        hashFile(file) == hashUrl(url)
+    }
+}

@@ -34,6 +34,11 @@ open class UpdateVendorDeps : DefaultTask() {
     @TaskAction
     fun updateVendorDeps() {
         for (info in project.wpi.deps.vendor.downloadInfo) {
+            if (info.upToDate) {
+                logger.lifecycle("${info.file.fileName} is up-to-date.")
+                continue
+            }
+            logger.lifecycle("Updating ${info.file.fileName} from ${info.url}...")
             val temp = Files.createTempFile("gradlerio-redux-download", ".json")
             info.url.openStream().use { source ->
                 Files.newOutputStream(temp).use { sink ->
@@ -41,6 +46,7 @@ open class UpdateVendorDeps : DefaultTask() {
                 }
             }
             Files.move(temp, info.file, StandardCopyOption.REPLACE_EXISTING)
+            logger.lifecycle("Updated ${info.file.fileName} from ${info.url}!")
         }
     }
 }

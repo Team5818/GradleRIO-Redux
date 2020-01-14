@@ -45,6 +45,7 @@ repositories {
 dependencies {
     api(gradleApi())
     implementation(kotlin("stdlib-jdk8"))
+    implementation("com.google.guava:guava:28.1-jre")
     implementation("edu.wpi.first:GradleRIO:2020.1.2")
     implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.5.6")
     testImplementation(kotlin("test-junit5"))

@@ -35,7 +35,6 @@ import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.kotlin.dsl.KotlinClosure0
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.attributes
 import org.gradle.kotlin.dsl.configure
@@ -160,14 +159,14 @@ class GradleRioRedux : Plugin<Project> {
 
     private fun Project.setupFatJar() {
         tasks.named<Jar>("jar") {
-            from(KotlinClosure0(function = {
-                return@KotlinClosure0 configurations["runtimeClasspath"].map {
-                    return@map when {
+            from(provider {
+                configurations["runtimeClasspath"].map {
+                    when {
                         it.isDirectory -> it
                         else -> zipTree(it)
                     }
                 }
-            }), mainJavaCompile)
+            }, mainJavaCompile)
 
             manifest {
                 attributes("Main-Class" to mainGeneration.get().mainClassFqn.get())
