@@ -36,17 +36,6 @@ open class GradleRioReduxExtension(project: Project) {
     val teamNumberProperty: Property<Int> = project.objects.property()
     var teamNumber: Int by teamNumberProperty
 
-    val librariesProperty: SetProperty<Library> = project.objects.setProperty()
-    init {
-        librariesProperty.convention(emptySet())
-    }
-
-    val libraries: Set<Library>
-        get() = librariesProperty.get()
-
-    fun addLibrary(library: Library) = librariesProperty.add(library)
-    fun addLibraries(vararg libraries: Library) = librariesProperty.addAll(*libraries)
-
     fun validate() {
         check(robotClassProperty.isPresent) { "Missing value for robotClass!" }
         check(teamNumberProperty.isPresent) { "Missing value for teamNumber!" }
