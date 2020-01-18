@@ -20,6 +20,7 @@
 
 package org.rivierarobotics.gradlerioredux
 
+import com.google.common.io.Resources
 import com.techshroom.inciseblue.InciseBlueExtension
 import com.techshroom.inciseblue.InciseBluePlugin
 import edu.wpi.first.gradlerio.GradleRIOPlugin
@@ -31,7 +32,7 @@ import jaci.gradle.deploy.DeployExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
@@ -62,6 +63,7 @@ class GradleRioRedux : Plugin<Project> {
             extensions.create<GradleRioReduxExtension>("gradleRioRedux", project)
             applyPlugins()
             setupTasks()
+            configureCheckstyle()
 
             afterEvaluate {
                 rioExt.validate()
@@ -71,7 +73,7 @@ class GradleRioRedux : Plugin<Project> {
     }
 
     private fun Project.applyPlugins() {
-        apply<JavaPlugin>()
+        apply(plugin = "java")
         apply<InciseBluePlugin>()
         configure<InciseBlueExtension> {
             if (rootProject.file("HEADER.txt").exists()) {
@@ -85,6 +87,25 @@ class GradleRioRedux : Plugin<Project> {
         }
 
         apply<GradleRIOPlugin>()
+        apply(plugin = "checkstyle")
+    }
+
+    private fun Project.configureCheckstyle() {
+        val checkstyleConfig = tasks.register("extractCheckstyleConfiguration") {
+            val output = project.layout.buildDirectory.file("gradlerioredux/checkstyle.xml")
+            outputs.file(output)
+            doLast {
+                output.get().asFile.outputStream().use {
+                    Resources.copy(
+                        Resources.getResource("org/rivierarobotics/gradlerioredux/checkstyle.xml"),
+                        it)
+                }
+            }
+        }
+        configure<CheckstyleExtension> {
+            config = resources.text.fromFile(checkstyleConfig)
+            version = "8.28"
+        }
     }
 
     private fun Project.mainSetup() {

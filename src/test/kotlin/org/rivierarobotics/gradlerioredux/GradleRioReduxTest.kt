@@ -45,7 +45,7 @@ class GradleRioReduxTest {
     companion object {
         @get:JvmStatic
         val gradleVersions: Set<GradleVersion> = when (System.getenv("CI")) {
-            "true", "1" -> setOf("5.6.4", "6.0.1").map(GradleVersion::String).toSet()
+            "true", "1" -> setOf("5.6.4", "6.0.1", "6.1").map(GradleVersion::String).toSet()
             else -> setOf(GradleVersion.Current)
         }
     }
@@ -81,7 +81,7 @@ class GradleRioReduxTest {
                 }
             }
             .withProjectDir(testProjectDir.toFile())
-            .withArguments("tasks", "-Si", "--debug")
+            .withArguments("tasks", "-S")
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -121,5 +121,37 @@ class GradleRioReduxTest {
         val tasksTask = result.task(":build")
         assertNotNull(tasksTask)
         assertEquals(tasksTask.outcome, TaskOutcome.SUCCESS)
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = ["getGradleVersions"])
+    fun checkstyleRuns(
+        gradleVersion: GradleVersion,
+        @TempDir testProjectDir: Path
+    ) {
+        makeBuildFile(testProjectDir)
+        val srcFile = testProjectDir.resolve("src/main/java/org/rr/Robot.java")
+        Files.createDirectories(srcFile.parent)
+        Files.writeString(srcFile, """
+                        package org.rr;
+                        import edu.wpi.first.wpilibj.TimedRobot;
+                        public class Robot extends TimedRobot {}
+                    """.trimIndent())
+
+        val result = GradleRunner.create()
+            .also {
+                if (gradleVersion is GradleVersion.String) {
+                    it.withGradleVersion(gradleVersion.version)
+                }
+            }
+            .withProjectDir(testProjectDir.toFile())
+            .withArguments("check", "-Si")
+            .withPluginClasspath()
+            .forwardOutput()
+            .build()
+
+        val checkstyleTask = result.task(":checkstyleMain")
+        assertNotNull(checkstyleTask)
+        assertEquals(checkstyleTask.outcome, TaskOutcome.SUCCESS)
     }
 }
