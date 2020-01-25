@@ -45,7 +45,7 @@ class GradleRioReduxTest {
     companion object {
         @get:JvmStatic
         val gradleVersions: Set<GradleVersion> = when (System.getenv("CI")) {
-            "true", "1" -> setOf("5.6.4", "6.0.1", "6.1").map(GradleVersion::String).toSet()
+            "true", "1" -> setOf("5.6.4", "6.0.1", "6.1.1").map(GradleVersion::String).toSet()
             else -> setOf(GradleVersion.Current)
         }
     }
@@ -103,7 +103,7 @@ class GradleRioReduxTest {
         Files.writeString(srcFile, """
                         package org.rr;
                         import edu.wpi.first.wpilibj.TimedRobot;
-                        public class Robot extends TimedRobot {}
+                        public class Robot extends TimedRobot { }
                     """.trimIndent())
 
         val result = GradleRunner.create()
@@ -135,7 +135,7 @@ class GradleRioReduxTest {
         Files.writeString(srcFile, """
                         package org.rr;
                         import edu.wpi.first.wpilibj.TimedRobot;
-                        public class Robot extends TimedRobot {}
+                        public class Robot extends TimedRobot { }
                     """.trimIndent())
 
         val result = GradleRunner.create()
