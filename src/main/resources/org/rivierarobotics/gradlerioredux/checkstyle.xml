@@ -45,9 +45,9 @@
         <module name="PackageName"/>
         <module name="ParameterName"/>
         <module name="TypeName"/>
-        <!-- Validate assignment operators -->
+        <module name="WhitespaceAfter"/>
         <module name="WhitespaceAround">
-            <property name="tokens" value="ASSIGN"/>
+            <property name="ignoreEnhancedForColon" value="false"/>
         </module>
     </module>
 </module>
