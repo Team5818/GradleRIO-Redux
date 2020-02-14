@@ -45,7 +45,6 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getPlugin
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.repositories
 import org.gradle.kotlin.dsl.the
 import org.rivierarobotics.gradlerioredux.tasks.CheckVendorDeps
 import org.rivierarobotics.gradlerioredux.tasks.UpdateVendorDeps
@@ -165,15 +164,6 @@ class GradleRioRedux : Plugin<Project> {
     }
 
     private fun Project.setupDependencies() {
-        repositories {
-            if (isAvailable("team5818-cw.local", 443)) {
-                logger.lifecycle("Using local maven proxy!")
-                maven {
-                    name = "Local Maven Proxy"
-                    url = uri("https://team5818-cw.local/maven/")
-                }
-            }
-        }
         dependencies {
             wpi.deps.allJavaDeps().forEach {
                 "implementation"(it)
