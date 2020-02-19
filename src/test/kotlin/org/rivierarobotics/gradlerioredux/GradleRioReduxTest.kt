@@ -48,6 +48,15 @@ class GradleRioReduxTest {
             "true", "1" -> setOf("5.6.4", "6.0.1", "6.1.1").map(GradleVersion::String).toSet()
             else -> setOf(GradleVersion.Current)
         }
+
+        private val SIMPLE_ROBOT_SRC = """
+            package org.rr;
+
+            import edu.wpi.first.wpilibj.TimedRobot;
+
+            public class Robot extends TimedRobot {
+            }
+        """.trimIndent()
     }
 
     lateinit var buildFile: Path
@@ -100,11 +109,7 @@ class GradleRioReduxTest {
         makeBuildFile(testProjectDir)
         val srcFile = testProjectDir.resolve("src/main/java/org/rr/Robot.java")
         Files.createDirectories(srcFile.parent)
-        Files.writeString(srcFile, """
-                        package org.rr;
-                        import edu.wpi.first.wpilibj.TimedRobot;
-                        public class Robot extends TimedRobot { }
-                    """.trimIndent())
+        Files.writeString(srcFile, SIMPLE_ROBOT_SRC)
 
         val result = GradleRunner.create()
             .also {
@@ -132,11 +137,7 @@ class GradleRioReduxTest {
         makeBuildFile(testProjectDir)
         val srcFile = testProjectDir.resolve("src/main/java/org/rr/Robot.java")
         Files.createDirectories(srcFile.parent)
-        Files.writeString(srcFile, """
-                        package org.rr;
-                        import edu.wpi.first.wpilibj.TimedRobot;
-                        public class Robot extends TimedRobot { }
-                    """.trimIndent())
+        Files.writeString(srcFile, SIMPLE_ROBOT_SRC)
 
         val result = GradleRunner.create()
             .also {
