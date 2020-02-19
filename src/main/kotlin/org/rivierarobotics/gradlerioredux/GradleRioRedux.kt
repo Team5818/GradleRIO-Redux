@@ -104,7 +104,7 @@ class GradleRioRedux : Plugin<Project> {
         }
         configure<CheckstyleExtension> {
             config = resources.text.fromFile(checkstyleConfig)
-            version = "8.28"
+            toolVersion = "8.29"
         }
     }
 
