@@ -46,7 +46,7 @@ dependencies {
     api(gradleApi())
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.google.guava:guava:28.2-jre")
-    implementation("edu.wpi.first:GradleRIO:2020.2.2")
+    implementation("edu.wpi.first:GradleRIO:2020.3.2")
     implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.5.7")
     testImplementation(kotlin("test-junit5"))
     commonLib("org.junit.jupiter", "junit-jupiter", "5.6.0") {
