@@ -40,13 +40,20 @@ when (System.getenv("CI")) {
 
 repositories {
     gradlePluginPortal()
+    maven {
+        name = "WPI"
+        url = uri("https://frcmaven.wpi.edu/artifactory/release")
+    }
 }
 
 dependencies {
+    val wpiVersion = "2020.3.2"
     api(gradleApi())
+    // import the linux variant, we just need something to compile against
+    compileOnly("edu.wpi.first.wpilib:PathWeaver:$wpiVersion:linux64")
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.google.guava:guava:28.2-jre")
-    implementation("edu.wpi.first:GradleRIO:2020.3.2")
+    implementation("edu.wpi.first:GradleRIO:$wpiVersion")
     implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.5.7")
     testImplementation(kotlin("test-junit5"))
     commonLib("org.junit.jupiter", "junit-jupiter", "5.6.0") {

@@ -32,6 +32,7 @@ import jaci.gradle.deploy.DeployExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
@@ -41,18 +42,23 @@ import org.gradle.kotlin.dsl.attributes
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.dir
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getPlugin
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.the
+import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.rivierarobotics.gradlerioredux.tasks.CheckVendorDeps
+import org.rivierarobotics.gradlerioredux.tasks.PathWeaverCompile
+import org.rivierarobotics.gradlerioredux.tasks.PathWeaverSourceSetExtension
 import org.rivierarobotics.gradlerioredux.tasks.UpdateVendorDeps
 
 internal val Project.rioExt
     get() = the<GradleRioReduxExtension>()
 
 private const val TASK_GROUP = "GradleRIO-Redux"
+const val PATH_WEAVER_CONFIGURATION = "grrPathWeaver"
 
 class GradleRioRedux : Plugin<Project> {
     lateinit var mainGeneration: TaskProvider<RobotMainGeneration>
@@ -64,6 +70,7 @@ class GradleRioRedux : Plugin<Project> {
             applyPlugins()
             setupTasks()
             configureCheckstyle()
+            setupPathWeaverSourceProcessing()
 
             afterEvaluate {
                 rioExt.validate()
@@ -164,6 +171,7 @@ class GradleRioRedux : Plugin<Project> {
     }
 
     private fun Project.setupDependencies() {
+        configurations.create(PATH_WEAVER_CONFIGURATION)
         dependencies {
             wpi.deps.allJavaDeps().forEach {
                 "implementation"(it)
@@ -175,6 +183,8 @@ class GradleRioRedux : Plugin<Project> {
                 "nativeDesktopZip"(it)
             }
             "testImplementation"("junit:junit:4.12")
+
+            PATH_WEAVER_CONFIGURATION("edu.wpi.first.wpilib:PathWeaver:${wpi.pathWeaverVersion}:${wpi.toolsClassifier}")
         }
     }
 
@@ -193,5 +203,44 @@ class GradleRioRedux : Plugin<Project> {
                 attributes("Main-Class" to mainGeneration.get().mainClassFqn.get())
             }
         }
+    }
+
+    private fun Project.setupPathWeaverSourceProcessing() {
+        convention.getPlugin<JavaPluginConvention>().sourceSets.configureEach {
+            val sourceSet = this
+            with(extensions) {
+                val extension = create<PathWeaverSourceSetExtension>("pathWeaver")
+                val sourceDir = project.objects.sourceDirectorySet(
+                    "pathWeaver", "${sourceSet.name} PathWeaver source"
+                )
+                sourceDir.srcDir(project.layout.projectDirectory.dir("src/${sourceSet.name}/pathWeaver"))
+                sourceDir.include("**/*")
+                sourceDir.destinationDirectory.convention(
+                    project.layout.buildDirectory.dir("pathWeaver/${sourceSet.name}")
+                )
+
+                extension.pathWeaver = sourceDir
+                val task = tasks.register<PathWeaverCompile>(sourceSet.getCompileTaskName("pathWeaver")) {
+                    group = TASK_GROUP
+                    description = "Compiles ${sourceDir.displayName}"
+                    sourceFiles = sourceDir
+                    outputDirectoryProperty.convention(sourceDir.destinationDirectory)
+                    projectDirectoryProperty.convention(rioExt.pathWeaverProjectProperty)
+                }
+                extension.pathWeaver.compiledBy(task) { it.outputDirectoryProperty }
+                sourceSet.resources.srcDir(sourceDir.destinationDirectory)
+                sourceSet.allSource.source(sourceDir)
+                sourceSet.output.dir(sourceDir.destinationDirectory, "builtBy" to task)
+                project.plugins.withId("idea") {
+                    afterEvaluate {
+                        configure<IdeaModel> {
+                            module.generatedSourceDirs.add(sourceDir.destinationDirectory.asFile.get())
+                            module.sourceDirs.addAll(sourceDir.srcDirs)
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }

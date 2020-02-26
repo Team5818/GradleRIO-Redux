@@ -36,6 +36,8 @@ open class GradleRioReduxExtension(project: Project) {
     val teamNumberProperty: Property<Int> = project.objects.property()
     var teamNumber: Int by teamNumberProperty
 
+    val pathWeaverProjectProperty = project.objects.directoryProperty()
+
     fun validate() {
         check(robotClassProperty.isPresent) { "Missing value for robotClass!" }
         check(teamNumberProperty.isPresent) { "Missing value for teamNumber!" }
