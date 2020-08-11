@@ -24,6 +24,9 @@ import com.google.common.hash.Funnels
 import com.google.common.hash.Hashing
 import java.io.InputStream
 import java.net.URL
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -36,7 +39,20 @@ private inline fun hashInputStream(inputStream: () -> InputStream) = hasher().ru
     hash().toString()
 }
 
-private fun hashUrl(url: URL) = hashInputStream { url.openStream() }
+private val HTTP_CLIENT by lazy {
+    HttpClient.newBuilder()
+        .followRedirects(HttpClient.Redirect.NORMAL)
+        .build()
+}
+
+fun URL.openStreamFollowRedirects(): InputStream {
+    return HTTP_CLIENT.send(
+        HttpRequest.newBuilder(toURI()).build(),
+        HttpResponse.BodyHandlers.ofInputStream()
+    ).body()
+}
+
+private fun hashUrl(url: URL) = hashInputStream { url.openStreamFollowRedirects() }
 
 private fun hashFile(file: Path) = hashInputStream { Files.newInputStream(file) }
 

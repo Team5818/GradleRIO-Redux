@@ -23,6 +23,7 @@ package org.rivierarobotics.gradlerioredux.tasks
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import org.rivierarobotics.gradlerioredux.downloadInfo
+import org.rivierarobotics.gradlerioredux.openStreamFollowRedirects
 import org.rivierarobotics.gradlerioredux.wpi
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -40,7 +41,7 @@ open class UpdateVendorDeps : DefaultTask() {
             }
             logger.lifecycle("Updating ${info.file.fileName} from ${info.url}...")
             val temp = Files.createTempFile("gradlerio-redux-download", ".json")
-            info.url.openStream().use { source ->
+            info.url.openStreamFollowRedirects().use { source ->
                 Files.newOutputStream(temp).use { sink ->
                     source.copyTo(sink)
                 }

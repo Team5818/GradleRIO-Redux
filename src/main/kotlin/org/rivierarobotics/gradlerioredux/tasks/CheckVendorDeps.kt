@@ -30,7 +30,7 @@ import org.rivierarobotics.gradlerioredux.wpi
  */
 open class CheckVendorDeps : DefaultTask() {
     @TaskAction
-    fun updateVendorDeps() {
+    fun checkVendorDeps() {
         for (info in project.wpi.deps.vendor.downloadInfo) {
             if (info.upToDate) {
                 logger.lifecycle("${info.file.fileName} is up-to-date.")
