@@ -20,15 +20,15 @@
 
 package org.rivierarobotics.gradlerioredux
 
+import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFile
-import org.gradle.api.internal.AbstractTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.property
 
-open class RobotMainGeneration : AbstractTask() {
+open class RobotMainGeneration : DefaultTask() {
     @get:Input
     val mainClassFqn: Property<String> = project.objects.property<String>().also {
         it.set("org.rivierarobotics.robot.Main")

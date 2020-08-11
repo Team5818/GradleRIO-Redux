@@ -8,7 +8,7 @@ plugins {
     `java-gradle-plugin`
     id("net.researchgate.release") version "2.8.1"
     id("com.techshroom.incise-blue") version "0.5.7"
-    id("com.gradle.plugin-publish") version "0.10.1"
+    id("com.gradle.plugin-publish") version "0.12.0"
 }
 
 require(JavaVersion.current().isJava11Compatible) {
@@ -52,11 +52,11 @@ dependencies {
     // import the linux variant, we just need something to compile against
     compileOnly("edu.wpi.first.wpilib:PathWeaver:$wpiVersion:linux64")
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.google.guava:guava:28.2-jre")
+    implementation("com.google.guava:guava:29.0-jre")
     implementation("edu.wpi.first:GradleRIO:$wpiVersion")
     implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.5.7")
     testImplementation(kotlin("test-junit5"))
-    commonLib("org.junit.jupiter", "junit-jupiter", "5.6.0") {
+    commonLib("org.junit.jupiter", "junit-jupiter", "5.6.2") {
         testImplementation(lib("api"))
         testImplementation(lib("engine"))
         testImplementation(lib("params"))
