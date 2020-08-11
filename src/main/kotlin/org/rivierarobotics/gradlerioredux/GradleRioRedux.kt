@@ -182,6 +182,8 @@ class GradleRioRedux : Plugin<Project> {
             wpi.deps.allJniDeps(NativePlatforms.desktop).forEach {
                 "nativeDesktopZip"(it)
             }
+            "simulation"("edu.wpi.first.halsim:halsim_gui:${wpi.wpilibVersion}:${NativePlatforms.desktop}@zip")
+
             "testImplementation"("junit:junit:4.12")
 
             PATH_WEAVER_CONFIGURATION("edu.wpi.first.wpilib:PathWeaver:${wpi.pathWeaverVersion}:${wpi.toolsClassifier}")
