@@ -186,7 +186,7 @@ class GradleRioRedux : Plugin<Project> {
 
             "testImplementation"("junit:junit:4.12")
 
-            PATH_WEAVER_CONFIGURATION("edu.wpi.first.wpilib:PathWeaver:${wpi.pathWeaverVersion}:${wpi.toolsClassifier}")
+            PATH_WEAVER_CONFIGURATION("edu.wpi.first.tools:PathWeaver:${wpi.pathWeaverVersion}:${wpi.toolsClassifier}")
         }
     }
 

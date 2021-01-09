@@ -65,7 +65,8 @@ val WPIVendorDepsExtension.downloadInfo
     get() = dependencies
         .filterNot { it.jsonUrl.isNullOrEmpty() }
         .map {
-            val file = vendorFolder.toPath().resolve(it.fileName)
+            // Note: this isn't strictly the same as WPI but it's good enough for me
+            val file = wpiExt.project.file("vendordeps").toPath().resolve(it.fileName)
             require(Files.exists(file)) {
                 "Vendor dep ${it.name} expects to be a file named ${it.fileName}," +
                     " but that file does not exist!"
