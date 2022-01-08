@@ -21,34 +21,27 @@
 package org.rivierarobotics.gradlerioredux
 
 import com.google.common.io.Resources
-import com.techshroom.inciseblue.InciseBlueExtension
-import com.techshroom.inciseblue.InciseBluePlugin
+import edu.wpi.first.deployutils.deploy.DeployExtension
+import edu.wpi.first.deployutils.deploy.artifact.FileTreeArtifact
 import edu.wpi.first.gradlerio.GradleRIOPlugin
-import edu.wpi.first.gradlerio.frc.FRCJavaArtifact
-import edu.wpi.first.gradlerio.frc.RoboRIO
-import edu.wpi.first.gradlerio.wpi.WPIPlugin
+import edu.wpi.first.gradlerio.deploy.roborio.FRCJavaArtifact
+import edu.wpi.first.gradlerio.deploy.roborio.RoboRIO
 import edu.wpi.first.toolchain.NativePlatforms
-import jaci.gradle.deploy.DeployExtension
-import org.gradle.api.JavaVersion
+import org.cadixdev.gradle.licenser.LicenseExtension
+import org.cadixdev.gradle.licenser.Licenser
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.attributes
-import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.dir
-import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getPlugin
-import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.the
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.ide.idea.model.IdeaModel
+import org.rivierarobotics.gradlerioredux.internal.frc
+import org.rivierarobotics.gradlerioredux.internal.wpi
 import org.rivierarobotics.gradlerioredux.tasks.CheckVendorDeps
 import org.rivierarobotics.gradlerioredux.tasks.PathWeaverCompile
 import org.rivierarobotics.gradlerioredux.tasks.PathWeaverSourceSetExtension
@@ -71,29 +64,31 @@ class GradleRioRedux : Plugin<Project> {
             setupTasks()
             configureCheckstyle()
             setupPathWeaverSourceProcessing()
-
-            afterEvaluate {
-                rioExt.validate()
-                mainSetup()
-            }
         }
     }
 
     private fun Project.applyPlugins() {
         apply(plugin = "java")
-        apply<InciseBluePlugin>()
-        configure<InciseBlueExtension> {
-            if (rootProject.file("HEADER.txt").exists()) {
-                license()
-            }
-            util {
-                setJavaVersion(JavaVersion.VERSION_11)
-                addRepositories = false
-            }
-            ide()
+
+        configure<JavaPluginExtension> {
+            toolchain.languageVersion.set(JavaLanguageVersion.of(11))
         }
 
-        apply<GradleRIOPlugin>()
+        if (rootProject.file("HEADER.txt").exists()) {
+            apply<Licenser>()
+            configure<LicenseExtension> {
+                exclude {
+                    it.file.startsWith(project.buildDir)
+                }
+                header(rootProject.file("HEADER.txt"))
+                (this as ExtensionAware).extra.apply {
+                    for (key in listOf("name", "organization", "url")) {
+                        set(key, rootProject.property(key))
+                    }
+                }
+            }
+        }
+
         apply(plugin = "checkstyle")
     }
 
@@ -105,22 +100,15 @@ class GradleRioRedux : Plugin<Project> {
                 output.get().asFile.outputStream().use {
                     Resources.copy(
                         Resources.getResource("org/rivierarobotics/gradlerioredux/checkstyle.xml"),
-                        it)
+                        it
+                    )
                 }
             }
         }
         configure<CheckstyleExtension> {
             config = resources.text.fromFile(checkstyleConfig)
-            toolVersion = "8.29"
+            toolVersion = "9.2.1"
         }
-    }
-
-    private fun Project.mainSetup() {
-        setupDeploy()
-        setupDependencies()
-        setupFatJar()
-        // need to run this again:
-        plugins.getPlugin(WPIPlugin::class).addMavenRepositories(project, wpi)
     }
 
     private fun Project.setupTasks() {
@@ -140,7 +128,9 @@ class GradleRioRedux : Plugin<Project> {
             dependsOn(compileJava, mgen)
 
             setSource(mgen.outputFile)
-            setDestinationDir(project.layout.buildDirectory.dir("${mgen.name}/classes").map { it.asFile })
+            destinationDirectory.set(
+                project.layout.buildDirectory.dir("${mgen.name}/classes")
+            )
             classpath = project.files(compileJava.outputs, configurations["compileClasspath"])
         }
         tasks.register<CheckVendorDeps>("checkVendorDeps") {
@@ -153,18 +143,24 @@ class GradleRioRedux : Plugin<Project> {
         }
     }
 
+    fun applyGradleRioConfiguration(project: Project) {
+        with(project) {
+            apply<GradleRIOPlugin>()
+            setupDeploy()
+            setupDependencies()
+            setupFatJar()
+        }
+    }
+
     private fun Project.setupDeploy() {
         configure<DeployExtension> {
-            targetsKt {
-                targetKt<RoboRIO>("roboRio") {
-                    team = rioExt.teamNumber
-                }
-            }
-
-            artifactsKt {
-                artifactKt<FRCJavaArtifact>("frcJava") {
-                    targets.add("roboRio")
-                    debug = frc.getDebugOrDefault(false)
+            targets.register<RoboRIO>("roboRio") {
+                team = project.rioExt.teamNumber
+                debug.set(frc.getDebugOrDefault(false))
+                artifacts.register<FRCJavaArtifact>("frcJava")
+                artifacts.register<FileTreeArtifact>("frcStaticFileDeploy") {
+                    files.set(project.fileTree("src/main/deploy"))
+                    directory.set("/home/lvuser/deploy")
                 }
             }
         }
@@ -173,20 +169,26 @@ class GradleRioRedux : Plugin<Project> {
     private fun Project.setupDependencies() {
         configurations.create(PATH_WEAVER_CONFIGURATION)
         dependencies {
-            wpi.deps.allJavaDeps().forEach {
-                "implementation"(it)
-            }
-            wpi.deps.allJniDeps(NativePlatforms.roborio).forEach {
-                "nativeZip"(it)
-            }
-            wpi.deps.allJniDeps(NativePlatforms.desktop).forEach {
-                "nativeDesktopZip"(it)
-            }
-            "simulation"("edu.wpi.first.halsim:halsim_gui:${wpi.wpilibVersion}:${NativePlatforms.desktop}@zip")
+            "implementation"(wpi.java.deps.wpilib())
+            "implementation"(wpi.java.vendor.java())
+
+            "roborioDebug"(wpi.java.deps.wpilibJniDebug(NativePlatforms.roborio))
+            "roborioDebug"(wpi.java.vendor.jniDebug(NativePlatforms.roborio))
+
+            "roborioRelease"(wpi.java.deps.wpilibJniRelease(NativePlatforms.roborio))
+            "roborioRelease"(wpi.java.vendor.jniRelease(NativePlatforms.roborio))
+
+            "nativeDebug"(wpi.java.deps.wpilibJniDebug(NativePlatforms.desktop))
+            "nativeDebug"(wpi.java.vendor.jniDebug(NativePlatforms.desktop))
+            "simulationDebug"(wpi.sim.enableDebug())
+
+            "nativeRelease"(wpi.java.deps.wpilibJniRelease(NativePlatforms.desktop))
+            "nativeRelease"(wpi.java.vendor.jniRelease(NativePlatforms.desktop))
+            "simulationRelease"(wpi.sim.enableRelease())
 
             "testImplementation"("junit:junit:4.12")
 
-            PATH_WEAVER_CONFIGURATION("edu.wpi.first.tools:PathWeaver:${wpi.pathWeaverVersion}:${wpi.toolsClassifier}")
+            PATH_WEAVER_CONFIGURATION("edu.wpi.first.tools:PathWeaver:${wpi.versions.pathWeaverVersion}:${wpi.toolsClassifier}")
         }
     }
 
@@ -208,7 +210,7 @@ class GradleRioRedux : Plugin<Project> {
     }
 
     private fun Project.setupPathWeaverSourceProcessing() {
-        convention.getPlugin<JavaPluginConvention>().sourceSets.configureEach {
+        the<JavaPluginExtension>().sourceSets.configureEach {
             val sourceSet = this
             with(extensions) {
                 val extension = create<PathWeaverSourceSetExtension>("pathWeaver")

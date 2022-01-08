@@ -33,8 +33,10 @@ open class RobotMainGeneration : DefaultTask() {
     val mainClassFqn: Property<String> = project.objects.property<String>().also {
         it.set("org.rivierarobotics.robot.Main")
     }
+
     @get:Input
     val robotClass: Property<String> = project.objects.property()
+
     @get:OutputFile
     val outputFile: Property<RegularFile> = project.objects.fileProperty().apply {
         set(project.layout.buildDirectory.dir("$name/generated/java").flatMap { dir ->
@@ -47,7 +49,8 @@ open class RobotMainGeneration : DefaultTask() {
         val parts = mainClassFqn.get().split('.')
         val pkg = parts.dropLast(1).joinToString(".")
         val name = parts.last()
-        outputFile.get().asFile.writeText("""
+        outputFile.get().asFile.writeText(
+            """
             package $pkg;
 
             import edu.wpi.first.wpilibj.RobotBase;
@@ -60,6 +63,7 @@ open class RobotMainGeneration : DefaultTask() {
                     RobotBase.startRobot(${robotClass.get()}::new);
                 }
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 }

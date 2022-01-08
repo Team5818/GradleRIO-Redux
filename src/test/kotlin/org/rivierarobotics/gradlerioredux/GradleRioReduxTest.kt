@@ -64,7 +64,8 @@ class GradleRioReduxTest {
     private fun makeBuildFile(testProjectDir: Path) {
         buildFile = testProjectDir.resolve("build.gradle.kts")
         Path::class.java.kotlin
-        Files.writeString(buildFile, """
+        Files.writeString(
+            buildFile, """
                     plugins {
                         id("org.rivierarobotics.gradlerioredux")
                     }
@@ -72,7 +73,8 @@ class GradleRioReduxTest {
                         robotClass = "org.rr.Robot"
                         teamNumber = 5818
                     }
-                """.trimIndent())
+                """.trimIndent()
+        )
     }
 
     @ParameterizedTest

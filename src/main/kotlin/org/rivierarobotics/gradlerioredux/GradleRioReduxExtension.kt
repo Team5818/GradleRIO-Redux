@@ -22,14 +22,9 @@ package org.rivierarobotics.gradlerioredux
 
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.SetProperty
-import org.gradle.kotlin.dsl.getValue
-import org.gradle.kotlin.dsl.property
-import org.gradle.kotlin.dsl.provideDelegate
-import org.gradle.kotlin.dsl.setProperty
-import org.gradle.kotlin.dsl.setValue
+import org.gradle.kotlin.dsl.*
 
-open class GradleRioReduxExtension(project: Project) {
+open class GradleRioReduxExtension(private val project: Project) {
     val robotClassProperty: Property<String> = project.objects.property()
     var robotClass: String by robotClassProperty
 
@@ -38,8 +33,7 @@ open class GradleRioReduxExtension(project: Project) {
 
     val pathWeaverProjectProperty = project.objects.directoryProperty()
 
-    fun validate() {
-        check(robotClassProperty.isPresent) { "Missing value for robotClass!" }
-        check(teamNumberProperty.isPresent) { "Missing value for teamNumber!" }
+    fun applyGradleRioConfiguration() {
+        project.plugins.getPlugin(GradleRioRedux::class).applyGradleRioConfiguration(project)
     }
 }

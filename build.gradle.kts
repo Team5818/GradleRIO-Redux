@@ -1,5 +1,3 @@
-import com.techshroom.inciseblue.commonLib
-import net.minecrell.gradle.licenser.LicenseExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
@@ -7,24 +5,27 @@ plugins {
     kotlin("jvm") version embeddedKotlinVersion
     `java-gradle-plugin`
     id("net.researchgate.release") version "2.8.1"
-    id("com.techshroom.incise-blue") version "0.5.7"
-    id("com.gradle.plugin-publish") version "0.12.0"
+    id("org.cadixdev.licenser") version "0.6.1"
+    id("com.gradle.plugin-publish") version "0.19.0"
+    `maven-publish`
 }
 
-require(JavaVersion.current().isJava11Compatible) {
-    "Java 11+ is needed to build this project."
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+
+tasks.named<JavaCompile>("compileJava") {
+    options.release.set(11)
 }
 
-inciseBlue {
-    license()
-    util {
-        setJavaVersion(JavaVersion.VERSION_11)
-        enableJUnit5()
+license {
+    exclude {
+        it.file.startsWith(project.buildDir)
     }
-    ide()
-}
-configure<LicenseExtension> {
-    include("**/*.kt")
+    header(rootProject.file("HEADER.txt"))
+    (this as ExtensionAware).extra.apply {
+        for (key in listOf("name", "organization", "url")) {
+            set(key, rootProject.property(key))
+        }
+    }
 }
 
 // Extra test logging for CI
@@ -47,21 +48,29 @@ repositories {
 }
 
 dependencies {
-    val wpiVersion = "2021.1.2"
+    val wpiVersion = "2022.1.1"
     api(gradleApi())
     // import the linux variant, we just need something to compile against
     compileOnly("edu.wpi.first.tools:PathWeaver:$wpiVersion:linux64")
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.google.guava:guava:30.1-jre")
+    implementation("com.google.guava:guava:31.0.1-jre")
     implementation("edu.wpi.first:GradleRIO:$wpiVersion")
-    implementation("com.techshroom.incise-blue:com.techshroom.incise-blue.gradle.plugin:0.5.7")
-    testImplementation(kotlin("test-junit5"))
-    commonLib("org.junit.jupiter", "junit-jupiter", "5.7.0") {
-        testImplementation(lib("api"))
-        testImplementation(lib("engine"))
-        testImplementation(lib("params"))
-    }
+    implementation("gradle.plugin.org.cadixdev.gradle:licenser:0.6.1")
+    testImplementation(platform("org.junit:junit-bom:5.8.2"))
     testImplementation(gradleTestKit())
+    testImplementation(kotlin("test-junit5"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("org.junit.jupiter:junit-jupiter-params")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+gradlePlugin {
+    plugins {
+        create("gradlerioredux") {
+            id = "org.rivierarobotics.gradlerioredux"
+            implementationClass = "org.rivierarobotics.gradlerioredux.GradleRioRedux"
+        }
+    }
 }
 
 pluginBundle {
@@ -70,8 +79,7 @@ pluginBundle {
     description = "GradleRIO bootstrapper. Biased but simple config."
 
     plugins {
-        create("gradlerioredux") {
-            id = "org.rivierarobotics.gradlerioredux"
+        named("gradlerioredux") {
             displayName = "GradleRIO Redux"
             tags = listOf("FRC", "GradleRIO")
         }

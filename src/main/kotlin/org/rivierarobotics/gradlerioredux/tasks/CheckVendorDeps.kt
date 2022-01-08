@@ -22,8 +22,7 @@ package org.rivierarobotics.gradlerioredux.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import org.rivierarobotics.gradlerioredux.downloadInfo
-import org.rivierarobotics.gradlerioredux.wpi
+import org.rivierarobotics.gradlerioredux.internal.wpiVendorDownloadInfo
 
 /**
  * Task to check the vendor dep JSON files for updates from their respective JSON URLs.
@@ -31,7 +30,7 @@ import org.rivierarobotics.gradlerioredux.wpi
 open class CheckVendorDeps : DefaultTask() {
     @TaskAction
     fun checkVendorDeps() {
-        for (info in project.wpi.deps.vendor.downloadInfo) {
+        for (info in project.wpiVendorDownloadInfo()) {
             if (info.upToDate) {
                 logger.lifecycle("${info.file.fileName} is up-to-date.")
             } else {
