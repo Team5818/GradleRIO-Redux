@@ -204,6 +204,10 @@ class GradleRioRedux : Plugin<Project> {
                 }
             }, mainJavaCompile)
 
+            exclude("META-INF/LICENSE")
+            exclude("META-INF/NOTICE")
+            exclude("module-info.class")
+
             manifest {
                 attributes("Main-Class" to mainGeneration.get().mainClassFqn.get())
             }
@@ -211,10 +215,10 @@ class GradleRioRedux : Plugin<Project> {
     }
 
     private fun Project.setupPathWeaverSourceProcessing() {
-        the<JavaPluginExtension>().sourceSets.configureEach {
-            val sourceSet = this
+        the<JavaPluginExtension>().sourceSets.forEach { sourceSet ->
             with(extensions) {
-                val extension = create<PathWeaverSourceSetExtension>("pathWeaver")
+                val extension: PathWeaverSourceSetExtension =
+                    findByType() ?: create("pathWeaverSourceSets")
                 val sourceDir = project.objects.sourceDirectorySet(
                     "pathWeaver", "${sourceSet.name} PathWeaver source"
                 )
@@ -237,11 +241,9 @@ class GradleRioRedux : Plugin<Project> {
                 sourceSet.allSource.source(sourceDir)
                 sourceSet.output.dir(sourceDir.destinationDirectory, "builtBy" to task)
                 project.plugins.withId("idea") {
-                    afterEvaluate {
-                        configure<IdeaModel> {
-                            module.generatedSourceDirs.add(sourceDir.destinationDirectory.asFile.get())
-                            module.sourceDirs.addAll(sourceDir.srcDirs)
-                        }
+                    configure<IdeaModel> {
+                        module.generatedSourceDirs.add(sourceDir.destinationDirectory.asFile.get())
+                        module.sourceDirs.addAll(sourceDir.srcDirs)
                     }
                 }
             }
