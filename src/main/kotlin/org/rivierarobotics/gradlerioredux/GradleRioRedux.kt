@@ -41,6 +41,7 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.rivierarobotics.gradlerioredux.internal.frc
+import org.rivierarobotics.gradlerioredux.internal.iterableAdd
 import org.rivierarobotics.gradlerioredux.internal.wpi
 import org.rivierarobotics.gradlerioredux.tasks.CheckVendorDeps
 import org.rivierarobotics.gradlerioredux.tasks.PathWeaverCompile
@@ -169,22 +170,22 @@ class GradleRioRedux : Plugin<Project> {
     private fun Project.setupDependencies() {
         configurations.create(PATH_WEAVER_CONFIGURATION)
         dependencies {
-            "implementation"(wpi.java.deps.wpilib())
-            "implementation"(wpi.java.vendor.java())
+            iterableAdd("implementation", wpi.java.deps.wpilib())
+            iterableAdd("implementation", wpi.java.vendor.java())
 
-            "roborioDebug"(wpi.java.deps.wpilibJniDebug(NativePlatforms.roborio))
-            "roborioDebug"(wpi.java.vendor.jniDebug(NativePlatforms.roborio))
+            iterableAdd("roborioDebug", wpi.java.deps.wpilibJniDebug(NativePlatforms.roborio))
+            iterableAdd("roborioDebug", wpi.java.vendor.jniDebug(NativePlatforms.roborio))
 
-            "roborioRelease"(wpi.java.deps.wpilibJniRelease(NativePlatforms.roborio))
-            "roborioRelease"(wpi.java.vendor.jniRelease(NativePlatforms.roborio))
+            iterableAdd("roborioRelease", wpi.java.deps.wpilibJniRelease(NativePlatforms.roborio))
+            iterableAdd("roborioRelease", wpi.java.vendor.jniRelease(NativePlatforms.roborio))
 
-            "nativeDebug"(wpi.java.deps.wpilibJniDebug(NativePlatforms.desktop))
-            "nativeDebug"(wpi.java.vendor.jniDebug(NativePlatforms.desktop))
-            "simulationDebug"(wpi.sim.enableDebug())
+            iterableAdd("nativeDebug", wpi.java.deps.wpilibJniDebug(NativePlatforms.desktop))
+            iterableAdd("nativeDebug", wpi.java.vendor.jniDebug(NativePlatforms.desktop))
+            iterableAdd("simulationDebug", wpi.sim.enableDebug())
 
-            "nativeRelease"(wpi.java.deps.wpilibJniRelease(NativePlatforms.desktop))
-            "nativeRelease"(wpi.java.vendor.jniRelease(NativePlatforms.desktop))
-            "simulationRelease"(wpi.sim.enableRelease())
+            iterableAdd("nativeRelease", wpi.java.deps.wpilibJniRelease(NativePlatforms.desktop))
+            iterableAdd("nativeRelease", wpi.java.vendor.jniRelease(NativePlatforms.desktop))
+            iterableAdd("simulationRelease", wpi.sim.enableRelease())
 
             "testImplementation"("junit:junit:4.12")
 

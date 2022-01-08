@@ -26,6 +26,7 @@ package org.rivierarobotics.gradlerioredux.internal
 import edu.wpi.first.gradlerio.deploy.FRCExtension
 import edu.wpi.first.gradlerio.wpi.WPIExtension
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.the
 import org.rivierarobotics.gradlerioredux.DownloadInfo
 import java.net.URL
@@ -45,6 +46,11 @@ fun Project.wpiVendorDownloadInfo() =
             DownloadInfo(file, URL(it.jsonUrl))
         }
 
+fun DependencyHandlerScope.iterableAdd(configurationName: String, items: Iterable<Any>) {
+    for (item in items) {
+        add(configurationName, item)
+    }
+}
 
 val Project.frc
     get() = the<FRCExtension>()
