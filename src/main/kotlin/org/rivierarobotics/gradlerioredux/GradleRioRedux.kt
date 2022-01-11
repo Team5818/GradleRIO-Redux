@@ -37,6 +37,7 @@ import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.ide.idea.model.IdeaModel
@@ -150,6 +151,12 @@ class GradleRioRedux : Plugin<Project> {
             setupDeploy()
             setupDependencies()
             setupFatJar()
+
+            wpi.sim.addGui().defaultEnabled.set(true)
+            wpi.sim.addDriverstation()
+
+            wpi.java.configureExecutableTasks(tasks.getByName<Jar>("jar"))
+            wpi.java.configureTestTasks(tasks.getByName<Test>("test"))
         }
     }
 
@@ -158,7 +165,9 @@ class GradleRioRedux : Plugin<Project> {
             targets.register<RoboRIO>("roboRio") {
                 team = project.rioExt.teamNumber
                 debug.set(frc.getDebugOrDefault(false))
-                artifacts.register<FRCJavaArtifact>("frcJava")
+                artifacts.register<FRCJavaArtifact>("frcJava") {
+                    setJarTask(tasks.named<Jar>("jar"))
+                }
                 artifacts.register<FileTreeArtifact>("frcStaticFileDeploy") {
                     files.set(project.fileTree("src/main/deploy"))
                     directory.set("/home/lvuser/deploy")
@@ -191,6 +200,8 @@ class GradleRioRedux : Plugin<Project> {
 
             PATH_WEAVER_CONFIGURATION("edu.wpi.first.tools:PathWeaver:${wpi.versions.pathWeaverVersion}:${wpi.toolsClassifier}")
         }
+
+        wpi.java.debugJni.set(false)
     }
 
     private fun Project.setupFatJar() {
@@ -208,9 +219,7 @@ class GradleRioRedux : Plugin<Project> {
             exclude("META-INF/NOTICE")
             exclude("module-info.class")
 
-            manifest {
-                attributes("Main-Class" to mainGeneration.get().mainClassFqn.get())
-            }
+            manifest(GradleRIOPlugin.javaManifest(mainGeneration.get().mainClassFqn.get()))
         }
     }
 
