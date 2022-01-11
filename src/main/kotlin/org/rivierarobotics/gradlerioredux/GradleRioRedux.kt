@@ -153,7 +153,7 @@ class GradleRioRedux : Plugin<Project> {
             setupFatJar()
 
             wpi.sim.addGui().defaultEnabled.set(true)
-            wpi.sim.addDriverstation()
+            wpi.sim.addDriverstation().defaultEnabled.set(true)
 
             wpi.java.configureExecutableTasks(tasks.getByName<Jar>("jar"))
             wpi.java.configureTestTasks(tasks.getByName<Test>("test"))
