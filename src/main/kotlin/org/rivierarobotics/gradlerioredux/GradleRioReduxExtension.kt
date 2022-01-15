@@ -33,6 +33,9 @@ open class GradleRioReduxExtension(private val project: Project) {
 
     val pathWeaverProjectProperty = project.objects.directoryProperty()
 
+    val checkstyleVersionProperty: Property<String> = project.objects.property()
+    val sevntuVersionProperty: Property<String> = project.objects.property()
+
     fun applyGradleRioConfiguration() {
         project.plugins.getPlugin(GradleRioRedux::class).applyGradleRioConfiguration(project)
     }

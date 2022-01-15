@@ -24,6 +24,10 @@
         "https://checkstyle.org/dtds/configuration_1_3.dtd">
 <module name="Checker">
     <property name="charset" value="UTF-8"/>
+    <!-- Excludes all 'module-info.java' files              -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="module\-info\.java$"/>
+    </module>
     <!-- Tabs are strictly banned -->
     <module name="FileTabCharacter">
         <property name="eachLine" value="true"/>
@@ -69,6 +73,15 @@
             <property name="max" value="2"/>
         </module>
         <module name="SuperFinalize"/>
+        <module name="RequireThis">
+            <property name="checkMethods" value="false"/>
+            <property name="validateOnlyOverlapping" value="false"/>
+        </module>
+        <!-- Make RequireThis only target assignments -->
+        <module name="SuppressionXpathSingleFilter">
+            <property name="checks" value="RequireThis"/>
+            <property name="query" value="//IDENT[not(parent::ASSIGN)]"/>
+        </module>
 
         <!-- Style -->
         <module name="LeftCurly">
@@ -152,9 +165,32 @@
             <property name="throwsIndent" value="4"/>
             <property name="lineWrappingIndentation" value="4"/>
             <property name="arrayInitIndent" value="4"/>
+            <property name="forceStrictCondition" value="true"/>
+        </module>
+        <!-- Make Indentation not target ternaries; https://github.com/checkstyle/checkstyle/issues/9719 related? -->
+        <!-- Also, any `new` seems to not work right -->
+        <module name="SuppressionXpathSingleFilter">
+            <property name="checks" value="Indentation"/>
+            <property name="query" value="//QUESTION/descendant-or-self::node()|//LITERAL_NEW/descendant-or-self::node()"/>
         </module>
         <module name="OverloadMethodsDeclarationOrder"/>
-        <module name="VariableDeclarationUsageDistance"/>
+        <module name="ModifierOrder"/>
+        <!-- Our custom declaration order check -->
+        <module name="CustomDeclarationOrder">
+            <property name="customDeclarationOrder"
+                      value="Field(.* INSTANCE)
+                   ### Method(.* getInstance.*)
+                   ### Field(.* static .*)
+                   ### Method(.* static .*)
+                   ### InnerEnum(.*)
+                   ### InnerInterface(.*)
+                   ### InnerClass(.*)
+                   ### Field(.*)
+                   ### MainMethod(.*)
+                   ### Ctor(public)
+                   ### Ctor(private)
+                   ### Method(.*)"/>
+        </module>
         <module name="CustomImportOrder">
             <property name="sortImportsInGroupAlphabetically" value="true"/>
             <property name="separateLineBetweenGroups" value="true"/>
@@ -217,7 +253,7 @@
         <module name="MethodName">
             <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>
             <message key="name.invalidPattern"
-                     value="Method name ''{0}'' must match pattern ''{1}''."/>
+                     value="Method name ''{0re}'' must match pattern ''{1}''."/>
         </module>
         <module name="SingleLineJavadoc">
             <property name="ignoreInlineTags" value="false"/>
@@ -243,7 +279,9 @@
         <module name="MethodName">
             <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
         </module>
-        <module name="PackageName"/>
+        <module name="PackageName">
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+        </module>
         <module name="ParameterName"/>
         <module name="TypeName"/>
         <module name="WhitespaceAfter"/>

@@ -56,8 +56,8 @@ private const val TASK_GROUP = "GradleRIO-Redux"
 const val PATH_WEAVER_CONFIGURATION = "grrPathWeaver"
 
 class GradleRioRedux : Plugin<Project> {
-    lateinit var mainGeneration: TaskProvider<RobotMainGeneration>
-    lateinit var mainJavaCompile: TaskProvider<JavaCompile>
+    private lateinit var mainGeneration: TaskProvider<RobotMainGeneration>
+    private lateinit var mainJavaCompile: TaskProvider<JavaCompile>
 
     override fun apply(project: Project) {
         project.run {
@@ -109,7 +109,12 @@ class GradleRioRedux : Plugin<Project> {
         }
         configure<CheckstyleExtension> {
             config = resources.text.fromFile(checkstyleConfig)
-            toolVersion = "9.2.1"
+        }
+        rioExt.checkstyleVersionProperty.convention("9.2.1")
+        rioExt.sevntuVersionProperty.convention("1.40.0")
+        dependencies {
+            "checkstyle"(rioExt.checkstyleVersionProperty.map { "com.puppycrawl.tools:checkstyle:$it" })
+            "checkstyle"(rioExt.sevntuVersionProperty.map { "com.github.sevntu-checkstyle:sevntu-checks:$it" })
         }
     }
 
