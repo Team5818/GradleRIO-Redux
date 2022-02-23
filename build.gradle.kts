@@ -48,7 +48,7 @@ repositories {
 }
 
 dependencies {
-    val wpiVersion = "2022.2.1"
+    val wpiVersion = "2022.3.1"
     api(gradleApi())
     // import the linux variant, we just need something to compile against
     compileOnly("edu.wpi.first.tools:PathWeaver:$wpiVersion:linux64")
