@@ -51,7 +51,7 @@ dependencies {
     val wpiVersion = "2023.1.1"
     api(gradleApi())
     // import the linux variant, we just need something to compile against
-    compileOnly("edu.wpi.first.tools:PathWeaver:$wpiVersion:linux64")
+    compileOnly("edu.wpi.first.tools:PathWeaver:$wpiVersion:linuxx64")
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.google.guava:guava:31.0.1-jre")
     implementation("edu.wpi.first:GradleRIO:$wpiVersion")
